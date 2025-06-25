@@ -12,8 +12,8 @@ const userRoutes = require("./routes/user");
 const friendRoutes = require("./routes/friend");
 const { authenticateToken } = require("./middleware/auth");
 const { setupSocket } = require("./socket/socketHandler");
-const { connectMongoDB } = require("./config/mongodb");
-const swaggerSetup = require("./config/swagger");
+const connectMongoDB = require("./config/mongodb");
+// const swaggerSetup = require("./config/swagger");
 
 const app = express();
 const server = http.createServer(app);
@@ -54,7 +54,7 @@ app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 
 // Swagger documentation
-swaggerSetup(app);
+// swaggerSetup(app);
 
 // Routes
 app.use("/api/auth", authRoutes);
