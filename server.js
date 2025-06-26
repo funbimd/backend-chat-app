@@ -10,6 +10,7 @@ require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const friendRoutes = require("./routes/friend");
+const messageRoutes = require("./routes/message");
 const { authenticateToken } = require("./middleware/auth");
 const { setupSocket } = require("./socket/socketHandler");
 const connectMongoDB = require("./config/mongodb");
@@ -60,6 +61,7 @@ app.use("/api/auth/register", authLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", authenticateToken, userRoutes);
 app.use("/api/friends", authenticateToken, friendRoutes);
+app.use("/api/messages", authenticateToken, messageRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
