@@ -1,4 +1,7 @@
-user test oworjest.mock('../services/emailService', () => ({
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+jest.mock('../services/emailService', () => ({
   sendVerificationEmail: jest.fn().mockResolvedValue(),
 }));
 const request = require('supertest');
@@ -13,7 +16,13 @@ describe('Auth Endpoints', () => {
   };
 
   beforeAll(async () => {
-    await request(app).post('/api/auth/register').send(user);
+    const regRes = await request(app).post('/api/auth/register').send(user);
+    // Mark user as verified in Postgres
+    await prisma.user.update({
+      where: { email: user.email },
+      data: { isEmailVerified: true },
+    });
+    console.log('Registration response:', regRes.statusCode, regRes.body);
   });
 
   it('should login a registered user', async () => {
