@@ -3,6 +3,10 @@ const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendVerificationEmail = async (email, token) => {
+  if (process.env.NODE_ENV === 'test') {
+    // Skip sending email in test environment
+    return;
+  }
   const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${token}`;
 
   const msg = {
