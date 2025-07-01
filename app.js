@@ -4,9 +4,9 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
-// Connect to MongoDB
-const mongoose = require("mongoose");
-mongoose.connect(process.env.MONGODB_URI);
+// Connect to MongoDB using config
+const connectDB = require("./config/mongodb");
+connectDB();
 
 // Import routes and middleware
 const authRoutes = require("./routes/auth");

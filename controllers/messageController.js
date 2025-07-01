@@ -2,7 +2,13 @@ const { validationResult } = require("express-validator");
 const Message = require("../models/Message");
 const { PrismaClient } = require("@prisma/client");
 
-const prisma = new PrismaClient();
+// Initialize Prisma client with error handling
+let prisma;
+try {
+  prisma = new PrismaClient();
+} catch (error) {
+  console.error("Failed to initialize Prisma client:", error);
+}
 
 const messageController = {
   // Send a message
@@ -17,6 +23,13 @@ const messageController = {
       }
 
       const { receiverId, content, messageType = "text" } = req.body;
+
+      // Check if Prisma is available
+      if (!prisma) {
+        return res.status(500).json({
+          error: "Database connection error",
+        });
+      }
 
       // Check if receiver exists and is a friend
       const friendship = await prisma.friendship.findFirst({
@@ -75,6 +88,13 @@ const messageController = {
       const { userId } = req.params;
       const { page = 1, limit = 50 } = req.query;
       const skip = (page - 1) * parseInt(limit);
+
+      // Check if Prisma is available
+      if (!prisma) {
+        return res.status(500).json({
+          error: "Database connection error",
+        });
+      }
 
       // Verify friendship
       const friendship = await prisma.friendship.findFirst({
@@ -167,6 +187,13 @@ const messageController = {
     try {
       const { page = 1, limit = 20 } = req.query;
       const skip = (page - 1) * parseInt(limit);
+
+      // Check if Prisma is available
+      if (!prisma) {
+        return res.status(500).json({
+          error: "Database connection error",
+        });
+      }
 
       // Get all friends
       const friendships = await prisma.friendship.findMany({

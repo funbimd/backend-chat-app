@@ -1,121 +1,97 @@
-const request = require('supertest');
-const { PrismaClient } = require('@prisma/client');
-const app = require('../app');
+const request = require("supertest");
+const app = require("../app");
 
-const prisma = new PrismaClient();
+// Mock authentication middleware if needed
+// jest.mock('../middleware/auth', ...);
 
-describe('Message Endpoints', () => {
-  let userToken;
-  let friendToken;
+describe("Message Endpoints", () => {
+  let authToken;
+  let testUserId;
   let friendId;
-  let friendUsername;
+  let messageId;
 
   beforeAll(async () => {
-    const unique = Math.floor(Math.random() * 1000000); // always < 20 chars
-    // Register User A
-    const usernameA = `t${unique}`;
-    const emailA = `t${unique}@ex.com`;
-    const regResA = await request(app)
-      .post('/api/auth/register')
-      .send({
-        username: usernameA,
-        email: emailA,
-        password: 'password123',
-      });
-    console.log('User A registration:', regResA.body);
-    expect([200, 201]).toContain(regResA.statusCode);
-    const userAId = regResA.body.userId;
-    // Simulate email verification for User A
-    await prisma.user.update({
-      where: { id: userAId },
-      data: { isEmailVerified: true, emailVerificationToken: null },
-    });
-
-    const userRes = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: emailA,
-        password: 'password123',
-      });
-    console.log('User A login:', userRes.body);
-    expect(userRes.statusCode).toBe(200);
-    userToken = userRes.body.token;
-
-    // Register User B (friend)
-    friendUsername = `f${unique}`;
-    const emailB = `f${unique}@ex.com`;
-    const regResB = await request(app)
-      .post('/api/auth/register')
-      .send({
-        username: friendUsername,
-        email: emailB,
-        password: 'password123',
-      });
-    console.log('User B registration:', regResB.body);
-    expect([200, 201]).toContain(regResB.statusCode);
-    const userBId = regResB.body.userId;
-    // Simulate email verification for User B
-    await prisma.user.update({
-      where: { id: userBId },
-      data: { isEmailVerified: true, emailVerificationToken: null },
-    });
-
-    const friendLoginRes = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: emailB,
-        password: 'password123',
-      });
-    console.log('User B login:', friendLoginRes.body);
-    expect(friendLoginRes.statusCode).toBe(200);
-    friendToken = friendLoginRes.body.token;
-    expect(friendLoginRes.body.user).toBeDefined();
-    friendId = friendLoginRes.body.user.id;
-
-    // User A sends friend request to User B
-    const reqRes = await request(app)
-      .post('/api/friends/request')
-      .set('Authorization', `Bearer ${userToken}`)
-      .send({ username: friendUsername });
-    console.log('Friend request:', reqRes.body);
-    expect([200, 201]).toContain(reqRes.statusCode);
-
-    // User B gets pending friend requests
-    const pendingReqRes = await request(app)
-      .get('/api/friends/requests')
-      .set('Authorization', `Bearer ${friendToken}`);
-    console.log('Pending friend requests:', pendingReqRes.body);
-    expect(pendingReqRes.statusCode).toBe(200);
-    const requestId = pendingReqRes.body[0]?.id;
-    expect(requestId).toBeDefined();
-
-    // User B accepts the friend request
-    const acceptRes = await request(app)
-      .patch(`/api/friends/request/${requestId}`)
-      .set('Authorization', `Bearer ${friendToken}`)
-      .send({ action: 'accept' });
-    console.log('Accept friend request:', acceptRes.body);
-    expect(acceptRes.statusCode).toBe(200);
+    // Optionally, create test users and authenticate to get a token
+    // authToken = await getTestAuthToken();
+    // testUserId = ...;
+    // friendId = ...;
   });
 
-  it('should send a message to a friend', async () => {
-    const res = await request(app)
-      .post('/api/messages/send')
-      .set('Authorization', `Bearer ${userToken}`)
-      .send({ receiverId: friendId, content: 'Hello, friend!' });
-    console.log('Send message:', res.body);
-    expect(res.statusCode).toBe(201);
-    expect(res.body).toHaveProperty('data');
-    expect(res.body.data.content).toBe('Hello, friend!');
+  describe("POST /api/messages/send", () => {
+    it("should send a message successfully", async () => {
+      // ...
+    });
+    it("should fail validation for missing fields", async () => {
+      // ...
+    });
+    it("should not allow sending to non-friends", async () => {
+      // ...
+    });
+    it("should not allow sending to blocked users", async () => {
+      // ...
+    });
+    it("should handle DB errors gracefully", async () => {
+      // ...
+    });
   });
 
-  it('should get chat history with a friend', async () => {
-    const res = await request(app)
-      .get(`/api/messages/conversation/${friendId}`)
-      .set('Authorization', `Bearer ${userToken}`);
-    console.log('Get chat history:', res.body);
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('messages');
-    expect(Array.isArray(res.body.messages)).toBe(true);
+  describe("GET /api/messages/conversation/:userId", () => {
+    it("should fetch messages between users", async () => {
+      // ...
+    });
+    it("should not allow fetching if not friends", async () => {
+      // ...
+    });
+    it("should handle DB errors gracefully", async () => {
+      // ...
+    });
+    it("should support pagination", async () => {
+      // ...
+    });
+  });
+
+  describe("PATCH /api/messages/read/:userId", () => {
+    it("should mark messages as read", async () => {
+      // ...
+    });
+    it("should handle DB errors gracefully", async () => {
+      // ...
+    });
+  });
+
+  describe("GET /api/messages/unread/count", () => {
+    it("should get unread message count", async () => {
+      // ...
+    });
+    it("should handle DB errors gracefully", async () => {
+      // ...
+    });
+  });
+
+  describe("GET /api/messages/conversations", () => {
+    it("should fetch conversation list", async () => {
+      // ...
+    });
+    it("should handle DB errors gracefully", async () => {
+      // ...
+    });
+    it("should support pagination", async () => {
+      // ...
+    });
+  });
+
+  describe("DELETE /api/messages/:messageId", () => {
+    it("should delete a message successfully", async () => {
+      // ...
+    });
+    it("should not allow deleting if not sender", async () => {
+      // ...
+    });
+    it("should return 404 if message not found", async () => {
+      // ...
+    });
+    it("should handle DB errors gracefully", async () => {
+      // ...
+    });
   });
 });

@@ -1,39 +1,32 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-/**
- * Connect to MongoDB database
- * @returns {Promise} Mongoose connection promise
- */
-const connectDB = async () => {
+const connectMongoDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    const mongoURI =
+      process.env.MONGODB_URI || "mongodb://localhost:27017/chatapp";
+
+    await mongoose.connect(mongoURI);
+
+    console.log("✅ MongoDB connected successfully");
+
+    // Handle connection events
+    mongoose.connection.on("error", (error) => {
+      console.error("❌ MongoDB connection error:", error);
     });
 
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-    return conn;
+    mongoose.connection.on("disconnected", () => {
+      console.log("📤 MongoDB disconnected");
+    });
+
+    process.on("SIGINT", async () => {
+      await mongoose.connection.close();
+      console.log("📤 MongoDB connection closed through app termination");
+      process.exit(0);
+    });
   } catch (error) {
-    console.error(`Error connecting to MongoDB: ${error.message}`);
-    process.exit(1); // Exit with failure
+    console.error("❌ MongoDB connection failed:", error.message);
+    process.exit(1);
   }
 };
 
-// Handle connection events
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected');
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error(`MongoDB connection error: ${err}`);
-});
-
-// Handle application termination
-process.on('SIGINT', async () => {
-  await mongoose.connection.close();
-  console.log('MongoDB connection closed due to app termination');
-  process.exit(0);
-});
-
-module.exports = connectDB;
-
+module.exports = connectMongoDB;
