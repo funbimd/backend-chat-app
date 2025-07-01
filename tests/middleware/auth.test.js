@@ -1,10 +1,12 @@
+// Mock Prisma and set JWT secret before importing middleware
+jest.mock("@prisma/client");
+process.env.JWT_SECRET = "testsecret";
+
+const { PrismaClient } = require("@prisma/client");
 const request = require("supertest");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const { authenticateToken } = require("../../middleware/auth");
-
-jest.mock("@prisma/client");
-const { PrismaClient } = require("@prisma/client");
 
 const app = express();
 app.use(express.json());
@@ -29,7 +31,6 @@ describe("Auth Middleware", () => {
       profilePicture: null,
       isEmailVerified: true,
     };
-    process.env.JWT_SECRET = "testsecret";
     validToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -60,12 +61,12 @@ describe("Auth Middleware", () => {
     expect(res.body.error).toBe("Token has been invalidated");
   });
 
-  it("should return 403 if token is invalid", async () => {
+  it("should return 401 if token is invalid", async () => {
     prismaMock.blacklistedToken.findUnique.mockResolvedValue(null);
     const res = await request(app)
       .get("/protected")
       .set("Authorization", "Bearer invalidtoken");
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
     expect(res.body.error).toBe("Invalid token");
   });
 

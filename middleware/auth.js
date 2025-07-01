@@ -1,9 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
 
-const prisma = new PrismaClient();
-
 const authenticateToken = async (req, res, next) => {
+  const prisma = new PrismaClient();
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
@@ -48,7 +47,7 @@ const authenticateToken = async (req, res, next) => {
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({ error: "Token expired" });
     }
-    return res.status(403).json({ error: "Invalid token" });
+    return res.status(401).json({ error: "Invalid token" });
   }
 };
 
