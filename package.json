@@ -6,8 +6,7 @@
     "test": "jest",
     "seed": "node prisma/seed.js",
     "start": "node server.js",
-    "build": "npx prisma generate",
-    "postinstall": "npx prisma generate"
+    "build": "npx prisma generate"
   },
   "keywords": [],
   "author": "",
